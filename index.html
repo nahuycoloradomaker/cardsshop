@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ETERN SHOP</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary: #00ff9d;
+      --primary-dark: #00cc7d;
+      --secondary: #7b61ff;
+      --dark-bg: #0a0a0a;
+      --card-bg: #151515;
+      --card-bg-hover: #1e1e1e;
+      --text: #ffffff;
+      --text-secondary: #b0b0b0;
+      --danger: #ff4757;
+      --warning: #ff9f43;
+      --epic: #ff6b9d;
+      --legendary: #ffd166;
+      --rare: #48dbfb;
+      --super-rare: #9b59b6;
+    }
+    
+    body {
+      background-color: var(--dark-bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 100px;
+      font-family: 'Montserrat', sans-serif;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(123, 97, 255, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(0, 255, 157, 0.05) 0%, transparent 20%);
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 24px 0 16px;
+      position: relative;
+      margin-bottom: 16px;
+    }
+    
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      border-radius: 2px;
+    }
+    
+    .header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 42px;
+      font-weight: 900;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      text-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+    }
+    
+    .header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    /* Balance */
+    .balance-container {
+      background: linear-gradient(135deg, var(--card-bg), #1a1a1a);
+      border-radius: 20px;
+      padding: 22px;
+      margin-bottom: 28px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .balance-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+    
+    .balance-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    
+    .balance-title i {
+      color: var(--primary);
+      font-size: 24px;
+    }
+    
+    .balance-title h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    
+    .balance-amount {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .balance-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 36px;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--primary), #ffffff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 10px rgba(0, 255, 157, 0.2);
+    }
+    
+    .balance-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #000;
+      box-shadow: 0 5px 15px rgba(0, 255, 157, 0.3);
+    }
+    
+    /* Cards Grid */
+    .cards {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      margin-bottom: 30px;
+    }
+    
+    /* Card */
+    .card {
+      background: linear-gradient(145deg, var(--card-bg), #111111);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .card:hover:not(.soldout) {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+      border-color: rgba(123, 97, 255, 0.2);
+    }
+    
+    .card-image {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .stock-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 2;
+    }
+    
+    .stock-badge i {
+      color: var(--primary);
+      font-size: 12px;
+    }
+    
+    /* Card Info */
+    .card-info {
+      padding: 20px;
+    }
+    
+    .rarity {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .rarity-icon {
+      font-size: 28px;
+    }
+    
+    .rarity-text {
+      font-size: 14px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    
+    .rarity-rare { background: rgba(72, 219, 251, 0.15); color: var(--rare); }
+    .rarity-super-rare { background: rgba(155, 89, 182, 0.15); color: var(--super-rare); }
+    .rarity-epic { background: rgba(255, 107, 157, 0.15); color: var(--epic); }
+    .rarity-legendary { background: rgba(255, 209, 102, 0.15); color: var(--legendary); }
+    
+    .card-name {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+    
+    .card-price {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .price-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    
+    .price-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary);
+      text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+    }
+    
+    /* Buy Button */
+    .buy-button {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+      color: #000;
+      font-weight: 800;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-family: 'Orbitron', sans-serif;
+    }
+    
+    .buy-button:hover:not(:disabled) {
+      background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+      box-shadow: 0 5px 15px rgba(0, 255, 157, 0.4);
+      transform: scale(1.02);
+    }
+    
+    .buy-button:disabled {
+      background: #333;
+      color: #666;
+      cursor: not-allowed;
+    }
+    
+    /* Soldout */
+    .soldout {
+      opacity: 0.7;
+      filter: grayscale(0.5);
+    }
+    
+    .soldout-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      gap: 12px;
+    }
+    
+    .soldout-text {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--danger);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    .soldout-icon {
+      font-size: 40px;
+      color: var(--danger);
+    }
+    
+    /* Close Button */
+    .close-button {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      padding: 18px 50px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .close-button:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateX(-50%) scale(1.05);
+    }
+    
+    /* Loader */
+    .loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      gap: 20px;
+    }
+    
+    .loader-spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid rgba(255, 255, 255, 0.1);
+      border-top: 5px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .cards {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      }
+      
+      .header h1 {
+        font-size: 36px;
+      }
+      
+      .balance-value {
+        font-size: 30px;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+      
+      .header h1 {
+        font-size: 32px;
+      }
+      
+      .balance-value {
+        font-size: 28px;
+      }
+      
+      .close-button {
+        width: 90%;
+        justify-content: center;
+      }
+    }
+    
+    /* Pulse animation for low stock */
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 159, 67, 0.5); }
+      70% { box-shadow: 0 0 0 8px rgba(255, 159, 67, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 159, 67, 0); }
+    }
+    
+    .low-stock {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>ETERN SHOP</h1>
+      <p>Эксклюзивные карты для коллекционеров</p>
+    </div>
+    
+    <!-- Balance -->
+    <div class="balance-container">
+      <div class="balance-title">
+        <i class="fas fa-wallet"></i>
+        <h2>Ваш баланс</h2>
+      </div>
+      <div class="balance-amount">
+        <div class="balance-value" id="bal">—</div>
+        <div class="balance-icon">
+          <i class="fas fa-coins"></i>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Cards Grid -->
+    <div class="cards" id="list">
+      <!-- Cards will be loaded here -->
+      <div class="loader">
+        <div class="loader-spinner"></div>
+        <p>Загрузка карт...</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Close Button -->
+  <button class="close-button" onclick="Telegram.WebApp.close()">
+    <i class="fas fa-times"></i>
+    ЗАКРЫТЬ МАГАЗИН
+  </button>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand(); 
+    tg.ready();
+    
+    const userId = tg.initDataUnsafe.user?.id || 0;
+    
+    const rarityConfig = {
+      "Редкая": {
+        emoji: "🔵",
+        colorClass: "rarity-rare",
+        name: "Редкая"
+      },
+      "Сверхредкая": {
+        emoji: "🟣",
+        colorClass: "rarity-super-rare",
+        name: "Сверхредкая"
+      },
+      "Эпическая": {
+        emoji: "🟠",
+        colorClass: "rarity-epic",
+        name: "Эпическая"
+      },
+      "Легендарная": {
+        emoji: "🟡",
+        colorClass: "rarity-legendary",
+        name: "Легендарная"
+      }
+    };
+
+    async function load() {
+      try {
+        const r = await fetch("https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/eternium-shop/main/data.json?t=" + Date.now());
+        const d = await r.json();
+
+        document.getElementById("bal").textContent = Number(d.balance).toLocaleString() + " ₭";
+        
+        const list = document.getElementById("list");
+        
+        // Если это первый загрузка, убираем лоадер
+        if (list.querySelector('.loader')) {
+          list.innerHTML = "";
+        }
+
+        d.cards.forEach(c => {
+          const left = c.stock === 0 ? "∞" : c.stock - c.sold;
+          const soldOut = left === 0;
+          const lowStock = left !== "∞" && left <= 5 && left > 0;
+          const rarity = rarityConfig[c.rarity] || rarityConfig["Редкая"];
+          
+          const div = document.createElement("div");
+          div.className = `card ${soldOut ? "soldout" : ""}`;
+          
+          div.innerHTML = `
+            <img src="${c.photo}" alt="${c.name}" class="card-image">
+            <div class="stock-badge ${lowStock ? 'low-stock' : ''}">
+              <i class="fas fa-box-open"></i>
+              <span>${left} шт.</span>
+            </div>
+            
+            ${soldOut ? `
+              <div class="soldout-overlay">
+                <i class="fas fa-times-circle soldout-icon"></i>
+                <div class="soldout-text">Распродано</div>
+              </div>
+            ` : ''}
+            
+            <div class="card-info">
+              <div class="rarity">
+                <div class="rarity-icon">${rarity.emoji}</div>
+                <div class="rarity-text ${rarity.colorClass}">${rarity.name}</div>
+              </div>
+              
+              <div class="card-name">${c.name}</div>
+              
+              <div class="card-price">
+                <div class="price-label">Стоимость</div>
+                <div class="price-value">${c.price.toLocaleString()} ₭</div>
+              </div>
+              
+              <button class="buy-button" ${soldOut ? "disabled" : ""} onclick="buy(${c.id})">
+                <i class="fas fa-shopping-cart"></i>
+                ${soldOut ? "РАСПРОДАНО" : "КУПИТЬ СЕЙЧАС"}
+              </button>
+            </div>
+          `;
+          
+          list.appendChild(div);
+        });
+      } catch(e) { 
+        console.log("Load error", e);
+        // Если ошибка, показываем сообщение
+        const list = document.getElementById("list");
+        list.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--warning); margin-bottom: 20px;"></i>
+            <h2 style="margin-bottom: 10px;">Ошибка загрузки</h2>
+            <p style="color: var(--text-secondary);">Попробуйте обновить страницу</p>
+          </div>
+        `;
+      }
+    }
+
+    function buy(id) {
+      // Эффект конфетти
+      confetti({
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.6 },
+        colors: ['#00ff9d', '#7b61ff', '#ffffff']
+      });
+      
+      // Дополнительный эффект
+      setTimeout(() => {
+        confetti({
+          particleCount: 50,
+          angle: 60,
+          spread: 80,
+          origin: { x: 0, y: 0.6 },
+          colors: ['#00ff9d']
+        });
+        
+        confetti({
+          particleCount: 50,
+          angle: 120,
+          spread: 80,
+          origin: { x: 1, y: 0.6 },
+          colors: ['#7b61ff']
+        });
+      }, 150);
+      
+      // Отправка данных в Telegram бот
+      tg.sendData(JSON.stringify({ 
+        action: "buy", 
+        card_id: id, 
+        user_id: userId,
+        timestamp: Date.now()
+      }));
+      
+      // Закрытие через 1 секунду
+      setTimeout(() => tg.close(), 1000);
+    }
+
+    // Загрузка данных
+    load();
+    
+    // Автообновление каждые 7 секунд
+    setInterval(load, 7000);
+    
+    // Изменение темы Telegram
+    tg.setHeaderColor('#0a0a0a');
+    tg.setBackgroundColor('#0a0a0a');
+  </script>
+</body>
+</html>
